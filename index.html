@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UNSIN — 2026 Annual Programming</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    /* ─── TOKENS ─── */
+    :root {
+      --bg:        #080808;
+      --surface:   #111111;
+      --surface2:  #161616;
+      --border:    rgba(255,255,255,0.08);
+      --accent:    #e9719b;
+      --text:      #F0EDE6;
+      --muted:     rgba(240,237,230,0.50);
+      --muted-dim: rgba(240,237,230,0.28);
+      --teal:      #6ecfbe;
+      --amber:     #f0a96b;
+      --font-d:    'Outfit', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --radius:    4px;
+      --radius-lg: 10px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-d);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ─── DECK ─── */
+    .deck { width: 100vw; height: 100vh; position: relative; overflow: hidden; }
+
+    /* ─── SLIDES ─── */
+    .slide {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      opacity: 0; pointer-events: none;
+      will-change: opacity, transform;
+    }
+    .slide.active {
+      opacity: 1; pointer-events: all;
+      animation: slideIn 0.6s cubic-bezier(0.16,1,0.3,1) forwards;
+    }
+    .slide.exit {
+      animation: slideOut 0.5s cubic-bezier(0.4,0,1,1) forwards;
+      pointer-events: none;
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(28px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideOut {
+      from { opacity: 1; transform: translateY(0); }
+      to   { opacity: 0; transform: translateY(-20px); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .slide.active { animation: none; opacity: 1; }
+      .slide.exit   { animation: none; opacity: 0; }
+    }
+
+    /* ─── CHROME ─── */
+    .progress-bar {
+      position: fixed; bottom: 0; left: 0;
+      height: 2px; background: var(--accent);
+      transition: width 0.5s cubic-bezier(0.16,1,0.3,1);
+      z-index: 200;
+    }
+    .nav-controls {
+      position: fixed; bottom: 22px; right: 28px;
+      display: flex; align-items: center; gap: 10px;
+      z-index: 200;
+    }
+    .nav-btn {
+      width: 38px; height: 38px; border-radius: 50%;
+      border: 1px solid var(--border);
+      background: rgba(8,8,8,0.8);
+      backdrop-filter: blur(12px);
+      color: var(--text); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .nav-btn:hover { border-color: rgba(255,255,255,0.26); background: rgba(20,20,20,0.9); }
+    .nav-btn:disabled { opacity: 0.28; cursor: not-allowed; }
+    .slide-counter {
+      font-family: var(--font-mono); font-size: 10px;
+      color: var(--muted-dim); letter-spacing: 0.12em;
+      min-width: 36px; text-align: center;
+    }
+    .slide-dots {
+      position: fixed; bottom: 26px; left: 50%;
+      transform: translateX(-50%);
+      display: flex; gap: 7px; z-index: 200;
+    }
+    .dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: rgba(240,237,230,0.18);
+      cursor: pointer; transition: background 0.3s, transform 0.3s;
+    }
+    .dot.active { background: var(--accent); transform: scale(1.4); }
+
+    /* ─── SHARED ─── */
+    .slide-inner {
+      flex: 1; display: flex; flex-direction: column;
+      padding: 52px 68px 68px;
+      max-width: 1360px; width: 100%; margin: 0 auto;
+      overflow: hidden;
+    }
+    .mono-label {
+      font-family: var(--font-mono); font-size: 11px;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 18px;
+    }
+
+    /* ─── COVER ─── */
+    .s-cover {
+      background: var(--bg);
+      justify-content: center; align-items: center;
+      text-align: center; overflow: hidden;
+    }
+    .cover-glow {
+      position: absolute; inset: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse 70% 55% at 50% 105%, rgba(233,113,155,0.14) 0%, transparent 65%),
+        radial-gradient(ellipse 40% 40% at 15% 15%, rgba(233,113,155,0.05) 0%, transparent 60%),
+        radial-gradient(ellipse 30% 40% at 85% 80%, rgba(110,207,190,0.04) 0%, transparent 55%);
+    }
+    .cover-grid-bg {
+      position: absolute; inset: 0; pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
+      background-size: 64px 64px;
+      -webkit-mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 20%, transparent 75%);
+      mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 20%, transparent 75%);
+    }
+    .cover-content {
+      position: relative; z-index: 2;
+      display: flex; flex-direction: column; align-items: center; gap: 22px;
+    }
+    .cover-kicker {
+      display: flex; align-items: center; gap: 14px;
+      font-family: var(--font-mono); font-size: 11px;
+      letter-spacing: 0.22em; text-transform: uppercase; color: var(--accent);
+    }
+    .cover-kicker-line { display: block; width: 36px; height: 1px; background: var(--accent); opacity: 0.45; }
+    .cover-wordmark {
+      font-size: clamp(88px, 14vw, 164px);
+      font-weight: 800; letter-spacing: -0.045em; line-height: 0.88; color: var(--text);
+    }
+    .cover-wordmark span { color: var(--accent); }
+    .cover-sub {
+      font-size: clamp(15px, 1.8vw, 21px); font-weight: 300;
+      color: var(--muted); letter-spacing: 0.01em; line-height: 1.45; max-width: 54ch;
+    }
+    .cover-sub em { font-style: italic; color: var(--text); font-weight: 400; }
+    .cover-divider { width: 48px; height: 1px; background: rgba(255,255,255,0.12); }
+    .cover-prog-row { display: flex; align-items: center; gap: 28px; }
+    .cover-prog-item {
+      font-family: var(--font-mono); font-size: 11px;
+      letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted-dim);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .cover-prog-item::before {
+      content: ''; display: block; width: 5px; height: 5px;
+      border-radius: 50%; background: var(--accent); flex-shrink: 0;
+    }
+    .cover-entity {
+      font-family: var(--font-mono); font-size: 11px;
+      letter-spacing: 0.14em; text-transform: uppercase; color: rgba(240,237,230,0.22);
+    }
+
+    /* ─── MISSION ─── */
+    .mission-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 68px; flex: 1; align-items: center;
+    }
+    .mission-hl {
+      font-size: clamp(34px, 4vw, 58px);
+      font-weight: 800; letter-spacing: -0.03em; line-height: 1.06; text-wrap: balance;
+    }
+    .mission-hl em { font-style: italic; color: var(--accent); }
+    .mission-r {
+      border-left: 1px solid var(--border);
+      padding-left: 56px;
+      display: flex; flex-direction: column; gap: 16px;
+    }
+    .mission-body { font-size: 15px; line-height: 1.72; color: var(--muted); }
+    .pillars { display: flex; flex-direction: column; gap: 10px; }
+    .pillar {
+      display: flex; align-items: flex-start; gap: 14px;
+      padding: 15px 17px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+    }
+    .pillar-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--accent); flex-shrink: 0; margin-top: 7px;
+    }
+    .pillar-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+    .pillar-sub { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+    /* ─── PROGRAMS OVERVIEW ─── */
+    .overview-hl {
+      font-size: clamp(32px, 3.6vw, 50px);
+      font-weight: 800; letter-spacing: -0.03em; margin-bottom: 30px;
+    }
+    .overview-hl em { font-style: italic; color: var(--accent); }
+    .overview-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; flex: 1; }
+    .prog-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 28px 24px;
+      display: flex; flex-direction: column; gap: 14px;
+      transition: border-color 0.3s;
+    }
+    .prog-card:hover { border-color: rgba(233,113,155,0.28); }
+    .prog-tag {
+      font-family: var(--font-mono); font-size: 10px;
+      letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent);
+    }
+    .prog-name { font-size: 24px; font-weight: 800; letter-spacing: -0.025em; line-height: 1.1; }
+    .prog-desc { font-size: 13px; line-height: 1.65; color: var(--muted); flex: 1; }
+    .prog-meta {
+      padding-top: 14px; border-top: 1px solid var(--border);
+      display: flex; flex-direction: column; gap: 9px;
+    }
+    .prog-meta-row { display: flex; justify-content: space-between; align-items: baseline; }
+    .meta-key {
+      font-family: var(--font-mono); font-size: 10px;
+      letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted-dim);
+    }
+    .meta-val { font-size: 12px; font-weight: 600; color: var(--text); text-align: right; }
+
+    /* ─── PROGRAM DETAIL (shared) ─── */
+    .prog-detail-grid {
+      display: grid; grid-template-columns: 5fr 3.4fr;
+      gap: 52px; flex: 1; align-items: center;
+    }
+    .prog-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(233,113,155,0.1); border: 1px solid rgba(233,113,155,0.22);
+      border-radius: 99px; padding: 5px 14px;
+      font-family: var(--font-mono); font-size: 11px;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 20px;
+    }
+    .prog-badge::before {
+      content: ''; width: 5px; height: 5px;
+      border-radius: 50%; background: var(--accent); flex-shrink: 0;
+    }
+    .big-hl {
+      font-size: clamp(40px, 5.2vw, 72px);
+      font-weight: 800; letter-spacing: -0.035em; line-height: 0.96; margin-bottom: 20px;
+    }
+    .big-hl em { font-style: italic; color: var(--accent); }
+    .prog-body { font-size: 15px; line-height: 1.72; color: var(--muted); max-width: 46ch; margin-bottom: 28px; }
+    .prog-stats { display: flex; gap: 28px; }
+    .pstat-num {
+      font-size: 36px; font-weight: 800; letter-spacing: -0.04em; line-height: 1; margin-bottom: 4px;
+    }
+    .pstat-num sup { font-size: 0.38em; color: var(--accent); vertical-align: super; }
+    .pstat-lbl {
+      font-family: var(--font-mono); font-size: 10px;
+      letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+    }
+    .info-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 32px;
+      height: 100%; display: flex; flex-direction: column;
+    }
+    .info-row { padding: 15px 0; border-bottom: 1px solid var(--border); }
+    .info-row:first-child { padding-top: 0; }
+    .info-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .info-key {
+      font-family: var(--font-mono); font-size: 10px;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 5px;
+    }
+    .info-val { font-size: 15px; font-weight: 600; color: var(--text); line-height: 1.35; }
+
+    /* ─── PHOTO SLIDE ─── */
+    .s-photo { background: var(--bg); }
+    .photo-inner {
+      flex: 1; display: flex; flex-direction: column;
+      padding: 48px 60px 60px;
+      max-width: 1360px; width: 100%; margin: 0 auto;
+    }
+    .photo-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 24px;
+    }
+    .photo-prog-name { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }
+    .photo-prog-name em { font-style: italic; color: var(--accent); }
+    .photo-hint {
+      font-family: var(--font-mono); font-size: 10px;
+      letter-spacing: 0.16em; text-transform: uppercase;
+      color: var(--muted-dim);
+    }
+    .photo-grid-festival {
+      flex: 1; display: grid;
+      grid-template-columns: 1.6fr 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 10px;
+    }
+    .photo-grid-talks {
+      flex: 1; display: grid;
+      grid-template-columns: repeat(4,1fr);
+      gap: 10px;
+    }
+    .photo-grid-labs {
+      flex: 1; display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 10px;
+    }
+    .photo-box {
+      border-radius: var(--radius-lg);
+      background: var(--surface);
+      border: 1px dashed rgba(255,255,255,0.13);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 10px; position: relative; overflow: hidden;
+      transition: border-color 0.3s;
+    }
+    .photo-box:hover { border-color: rgba(233,113,155,0.3); }
+    .photo-box.span-col-2 { grid-column: span 2; }
+    .photo-box.span-row-2 { grid-row: span 2; }
+    .photo-box-inner {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 8px; text-align: center;
+    }
+    .photo-icon {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: rgba(233,113,155,0.1);
+      border: 1px solid rgba(233,113,155,0.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+    }
+    .photo-box-label {
+      font-family: var(--font-mono); font-size: 10px;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--accent);
+    }
+    .photo-box-sub {
+      font-size: 12px; color: var(--muted-dim);
+    }
+    /* Subtle shimmer background for photo boxes */
+    .photo-box::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 60% 60% at 50% 50%, rgba(233,113,155,0.04) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* ─── EVENT LIST (talks / labs) ─── */
+    .two-col {
+      display: grid; grid-template-columns: 1fr 1.4fr;
+      gap: 52px; flex: 1; align-items: start; padding-top: 6px;
+    }
+    .two-col-eq {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 52px; flex: 1; align-items: start; padding-top: 6px;
+    }
+    .talks-body { font-size: 14px; line-height: 1.72; color: var(--muted); margin-top: 14px; }
+    .event-list { display: flex; flex-direction: column; gap: 9px; }
+    .event-row {
+      display: grid; grid-template-columns: 80px 1fr auto;
+      align-items: center; gap: 16px;
+      padding: 15px 20px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); transition: border-color 0.25s;
+    }
+    .event-row:hover { border-color: rgba(233,113,155,0.22); }
+    .ev-month {
+      font-family: var(--font-mono); font-size: 11px;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--accent); font-weight: 500;
+    }
+    .ev-name { font-size: 14px; font-weight: 600; color: var(--text); }
+    .ev-sub  { font-size: 11px; color: var(--muted); margin-top: 2px; line-height: 1.4; }
+    .ev-tag {
+      font-family: var(--font-mono); font-size: 10px;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 4px 10px; border-radius: 99px; white-space: nowrap;
+    }
+    .ev-tag-pink {
+      background: rgba(233,113,155,0.1); border: 1px solid rgba(233,113,155,0.2); color: var(--accent);
+    }
+    .ev-tag-teal {
+      background: rgba(110,207,190,0.1); border: 1px solid rgba(110,207,190,0.2); color: var(--teal);
+    }
+    .ev-tag-amber {
+      background: rgba(240,169,107,0.1); border: 1px solid rgba(240,169,107,0.2); color: var(--amber);
+    }
+    .event-sum {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px 20px;
+      border: 1px solid var(--border); border-radius: var(--radius-lg);
+      background: var(--surface2); margin-top: 2px;
+    }
+    .event-sum-lbl {
+      font-family: var(--font-mono); font-size: 10px;
+      letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted-dim);
+    }
+    .event-sum-num { font-size: 18px; font-weight: 800; letter-spacing: -0.02em; }
+    .double-tag { display: flex; flex-direction: column; gap: 4px; align-items: flex-end; }
+    .labs-formats {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 22px;
+    }
+    .fmt-box {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 18px 16px;
+    }
+    .fmt-key {
+      font-family: var(--font-mono); font-size: 10px;
+      letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px;
+    }
+    .fmt-num { font-size: 32px; font-weight: 800; letter-spacing: -0.03em; line-height: 1; margin-bottom: 4px; }
+    .fmt-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+    /* ─── CALENDAR ─── */
+    .cal-hl {
+      font-size: clamp(28px, 3.2vw, 44px);
+      font-weight: 800; letter-spacing: -0.03em; margin-bottom: 28px;
+    }
+    .cal-hl em { font-style: italic; color: var(--accent); }
+    .cal-section-label {
+      font-family: var(--font-mono); font-size: 10px;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--muted-dim); margin-bottom: 10px;
+    }
+    .cal-grid {
+      display: grid; grid-template-columns: repeat(12,1fr); gap: 7px;
+    }
+    .month-col { display: flex; flex-direction: column; gap: 6px; }
+    .m-label {
+      font-family: var(--font-mono); font-size: 9px;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--muted-dim); text-align: center;
+      padding-bottom: 7px; border-bottom: 1px solid var(--border);
+    }
+    .cal-chip {
+      border-radius: 5px; padding: 7px 5px;
+      font-size: 9px; font-weight: 600;
+      line-height: 1.25; text-align: center;
+    }
+    .chip-festival {
+      background: rgba(233,113,155,0.18); border: 1px solid rgba(233,113,155,0.3); color: var(--accent);
+    }
+    .chip-talks {
+      background: rgba(240,237,230,0.07); border: 1px solid rgba(240,237,230,0.13); color: var(--text);
+    }
+    .chip-webinar {
+      background: rgba(110,207,190,0.1); border: 1px solid rgba(110,207,190,0.2); color: var(--teal);
+    }
+    .chip-inperson {
+      background: rgba(240,169,107,0.1); border: 1px solid rgba(240,169,107,0.2); color: var(--amber);
+    }
+    .cal-2027-strip {
+      margin-top: 18px;
+      padding: 14px 16px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      display: flex; align-items: center; gap: 16px;
+    }
+    .cal-2027-label {
+      font-family: var(--font-mono); font-size: 10px;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--muted-dim); white-space: nowrap;
+      padding-right: 16px; border-right: 1px solid var(--border);
+    }
+    .cal-2027-events { display: flex; gap: 10px; flex-wrap: wrap; }
+    .cal-2027-item {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 12px; color: var(--muted);
+    }
+    .cal-2027-month {
+      font-family: var(--font-mono); font-size: 10px;
+      letter-spacing: 0.1em; text-transform: uppercase; color: var(--amber);
+      white-space: nowrap;
+    }
+    .cal-legend {
+      display: flex; gap: 20px; padding-top: 14px;
+      border-top: 1px solid var(--border); margin-top: 14px;
+    }
+    .leg {
+      display: flex; align-items: center; gap: 7px;
+      font-family: var(--font-mono); font-size: 10px;
+      letter-spacing: 0.1em; color: var(--muted);
+    }
+    .leg-sq { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+
+    /* ─── IMPACT ─── */
+    .impact-hl {
+      font-size: clamp(32px, 3.6vw, 50px);
+      font-weight: 800; letter-spacing: -0.03em; margin-bottom: 34px;
+    }
+    .impact-hl em { font-style: italic; color: var(--accent); }
+    .stats-strip {
+      display: grid; grid-template-columns: repeat(4,1fr);
+      border: 1px solid var(--border); border-radius: var(--radius-lg);
+      overflow: hidden; margin-bottom: 20px;
+    }
+    .stat-cell {
+      padding: 28px 24px; background: var(--surface);
+      border-right: 1px solid var(--border);
+    }
+    .stat-cell:last-child { border-right: none; }
+    .stat-n {
+      font-size: clamp(36px, 3.8vw, 56px);
+      font-weight: 800; letter-spacing: -0.04em; line-height: 1; margin-bottom: 6px;
+    }
+    .stat-n sup { font-size: 0.38em; color: var(--accent); vertical-align: super; }
+    .stat-l {
+      font-family: var(--font-mono); font-size: 10px;
+      letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+    }
+    .impact-quotes { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .i-quote {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 22px 20px;
+      font-size: 14px; line-height: 1.65; color: var(--muted); font-style: italic;
+    }
+    .i-quote cite {
+      font-style: normal; font-size: 11px; color: var(--accent);
+      display: block; margin-top: 10px;
+      font-family: var(--font-mono); letter-spacing: 0.08em;
+    }
+
+    /* ─── COLLABORATION ─── */
+    .collab-hl {
+      font-size: clamp(30px, 3.4vw, 48px);
+      font-weight: 800; letter-spacing: -0.03em; line-height: 1.05; margin-bottom: 14px;
+    }
+    .collab-hl em { font-style: italic; color: var(--accent); }
+    .collab-body { font-size: 14px; line-height: 1.7; color: var(--muted); margin-bottom: 20px; }
+    .collab-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 52px; flex: 1; align-items: start; padding-top: 6px;
+    }
+    .collab-pillars { display: flex; flex-direction: column; gap: 14px; }
+    .collab-pillar {
+      padding: 20px 22px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      display: flex; flex-direction: column; gap: 6px;
+      transition: border-color 0.3s;
+    }
+    .collab-pillar:hover { border-color: rgba(233,113,155,0.3); }
+    .collab-pillar-num {
+      font-family: var(--font-mono); font-size: 10px;
+      letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent);
+    }
+    .collab-pillar-title { font-size: 16px; font-weight: 700; color: var(--text); }
+    .collab-pillar-body { font-size: 13px; color: var(--muted); line-height: 1.55; }
+    .benefit-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 28px; height: 100%;
+    }
+    .benefit-title { font-size: 13px; font-weight: 700; margin-bottom: 16px; color: var(--text); }
+    .benefit-items { display: flex; flex-direction: column; gap: 12px; }
+    .benefit-item {
+      display: flex; align-items: flex-start; gap: 10px;
+      font-size: 13px; color: var(--muted); line-height: 1.5;
+    }
+    .benefit-arrow { color: var(--accent); font-weight: 700; flex-shrink: 0; }
+
+    /* ─── CLOSE ─── */
+    .s-close {
+      background: var(--bg);
+      justify-content: center; align-items: center;
+      text-align: center; overflow: hidden;
+    }
+    .close-glow {
+      position: absolute; inset: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse 60% 65% at 50% 108%, rgba(233,113,155,0.16) 0%, transparent 65%),
+        radial-gradient(ellipse 35% 35% at 80% 10%, rgba(110,207,190,0.04) 0%, transparent 55%);
+    }
+    .close-content {
+      position: relative; z-index: 2;
+      display: flex; flex-direction: column; align-items: center; gap: 20px;
+      max-width: 680px;
+    }
+    .close-hl {
+      font-size: clamp(40px, 5.8vw, 80px);
+      font-weight: 800; letter-spacing: -0.035em; line-height: 0.97; text-wrap: balance;
+    }
+    .close-hl em { font-style: italic; color: var(--accent); }
+    .close-body { font-size: 16px; color: var(--muted); line-height: 1.65; max-width: 50ch; }
+    .close-email {
+      font-family: var(--font-mono); font-size: 13px;
+      color: var(--muted); letter-spacing: 0.06em;
+    }
+    .close-cta-btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--accent); color: #fff;
+      font-size: 13px; font-weight: 700; letter-spacing: 0.07em;
+      text-transform: uppercase; text-decoration: none;
+      padding: 14px 30px; border-radius: var(--radius);
+      transition: opacity 0.2s, transform 0.15s;
+    }
+    .close-cta-btn:hover { opacity: 0.86; transform: translateY(-1px); }
+    .close-cta-btn svg { width: 14px; height: 14px; }
+    .close-wordmark { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; margin-top: 10px; }
+    .close-wordmark span { color: var(--accent); }
+    .close-tag {
+      font-family: var(--font-mono); font-size: 10px;
+      letter-spacing: 0.16em; text-transform: uppercase; color: rgba(240,237,230,0.2);
+    }
+  </style>
+</head>
+<body>
+<div class="deck" id="deck">
+
+  <div class="progress-bar" id="progressBar"></div>
+  <div class="slide-dots" id="slideDots"></div>
+  <div class="nav-controls">
+    <button class="nav-btn" id="prevBtn" aria-label="Previous">&#8592;</button>
+    <span class="slide-counter" id="slideCounter">1 / 13</span>
+    <button class="nav-btn" id="nextBtn" aria-label="Next">&#8594;</button>
+  </div>
+
+  <!-- ══ SLIDE 1 — COVER ══ -->
+  <div class="slide s-cover active" data-slide="0">
+    <div class="cover-glow"></div>
+    <div class="cover-grid-bg"></div>
+    <div class="cover-content">
+      <div class="cover-kicker">
+        <span class="cover-kicker-line"></span>
+        2026 Annual Programming
+        <span class="cover-kicker-line"></span>
+      </div>
+      <div class="cover-wordmark">UNS<span>IN</span></div>
+      <div class="cover-sub">Where <em>Latin Music</em> lives, grows, and shapes the future of cultural community.</div>
+      <div class="cover-divider"></div>
+      <div class="cover-prog-row">
+        <div class="cover-prog-item">UNSIN Festival</div>
+        <div class="cover-prog-item">UNSIN Talks</div>
+        <div class="cover-prog-item">UNSIN Labs</div>
+      </div>
+      <div class="cover-entity">A 501(c)(3) Non-Profit Organization</div>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 2 — MISSION ══ -->
+  <div class="slide" data-slide="1">
+    <div class="slide-inner">
+      <div class="mono-label">About UNSIN</div>
+      <div class="mission-grid">
+        <div>
+          <div class="mission-hl">Building community through the <em>power of Latin music</em> and culture.</div>
+        </div>
+        <div class="mission-r">
+          <div class="mission-body">
+            UNSIN is a non-profit organization dedicated to elevating Latin music and its artists — creating year-round spaces for cultural expression, professional development, and community connection.
+          </div>
+          <div class="pillars">
+            <div class="pillar">
+              <div class="pillar-dot"></div>
+              <div>
+                <div class="pillar-title">Community</div>
+                <div class="pillar-sub">Authentic spaces where Latin music and identity are centered, celebrated, and connected across generations and geographies.</div>
+              </div>
+            </div>
+            <div class="pillar">
+              <div class="pillar-dot"></div>
+              <div>
+                <div class="pillar-title">Education</div>
+                <div class="pillar-sub">Equipping Latin music artists and professionals with the knowledge, tools, and networks to build sustainable, lasting creative careers.</div>
+              </div>
+            </div>
+            <div class="pillar">
+              <div class="pillar-dot"></div>
+              <div>
+                <div class="pillar-title">Innovation</div>
+                <div class="pillar-sub">Research and support on the most pressing challenges with tech and AI in the creative economies — building pathways for Latin creators to lead, not just adapt.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 3 — PROGRAMS OVERVIEW ══ -->
+  <div class="slide" data-slide="2">
+    <div class="slide-inner">
+      <div class="mono-label">Our Programs</div>
+      <div class="overview-hl">Three pillars. <em>One mission.</em></div>
+      <div class="overview-grid">
+        <div class="prog-card">
+          <div class="prog-tag">Program 01</div>
+          <div class="prog-name">UNSIN Festival</div>
+          <div class="prog-desc">Our flagship annual event — a full-scale music festival bringing together live performances, cultural activations, community programming, and industry gatherings to celebrate Latin music at its fullest expression.</div>
+          <div class="prog-meta">
+            <div class="prog-meta-row"><div class="meta-key">Format</div><div class="meta-val">Annual In-Person Event</div></div>
+            <div class="prog-meta-row"><div class="meta-key">Month</div><div class="meta-val">April</div></div>
+            <div class="prog-meta-row"><div class="meta-key">Frequency</div><div class="meta-val">1&times; per year</div></div>
+          </div>
+        </div>
+        <div class="prog-card">
+          <div class="prog-tag">Program 02</div>
+          <div class="prog-name">UNSIN Talks</div>
+          <div class="prog-desc">A recurring in-person series bringing together artists, industry leaders, and community members for honest conversations about Latin music, cultural identity, and the evolving landscape of the creative economy.</div>
+          <div class="prog-meta">
+            <div class="prog-meta-row"><div class="meta-key">Format</div><div class="meta-val">In-Person Events</div></div>
+            <div class="prog-meta-row"><div class="meta-key">Months</div><div class="meta-val">Feb &middot; Jul &middot; Oct &middot; Dec</div></div>
+            <div class="prog-meta-row"><div class="meta-key">Frequency</div><div class="meta-val">4&times; per year</div></div>
+          </div>
+        </div>
+        <div class="prog-card">
+          <div class="prog-tag">Program 03</div>
+          <div class="prog-name">UNSIN Labs</div>
+          <div class="prog-desc">Creating an ecosystem to support innovative creators building solutions for the challenges of AI and tech in the creative industries — and giving them the tools, community, and platforms to advance their work and impact.</div>
+          <div class="prog-meta">
+            <div class="prog-meta-row"><div class="meta-key">Format</div><div class="meta-val">Webinars + In-Person</div></div>
+            <div class="prog-meta-row"><div class="meta-key">Months</div><div class="meta-val">Jun, Aug &rsquo;26 · Feb, Mar &rsquo;27</div></div>
+            <div class="prog-meta-row"><div class="meta-key">Frequency</div><div class="meta-val">4 events per season</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 4 — FESTIVAL DETAIL ══ -->
+  <div class="slide" data-slide="3">
+    <div class="slide-inner">
+      <div class="mono-label">Program 01 &mdash; Annual Event</div>
+      <div class="prog-detail-grid">
+        <div>
+          <div class="prog-badge">Annual &middot; April</div>
+          <div class="big-hl">UNSIN<br><em>Festival</em></div>
+          <div class="prog-body">
+            Our flagship event brings Latin music to the forefront with live performances, cultural activations, community programming, and industry gatherings. Once a year, UNSIN Festival creates an unmissable moment that unites artists, fans, and the broader Latin music community.
+          </div>
+          <div class="prog-stats">
+            <div class="pstat">
+              <div class="pstat-num">1<sup>&times;</sup></div>
+              <div class="pstat-lbl">Per Year</div>
+            </div>
+            <div class="pstat">
+              <div class="pstat-num">April</div>
+              <div class="pstat-lbl">Every Year</div>
+            </div>
+            <div class="pstat">
+              <div class="pstat-num">Multi</div>
+              <div class="pstat-lbl">Day Format</div>
+            </div>
+          </div>
+        </div>
+        <div class="info-card">
+          <div class="info-row"><div class="info-key">Format</div><div class="info-val">Full-Scale In-Person Festival</div></div>
+          <div class="info-row"><div class="info-key">Cadence</div><div class="info-val">Once Annually &middot; April</div></div>
+          <div class="info-row"><div class="info-key">Programming</div><div class="info-val">Live Music &middot; Cultural Activations &middot; Community Events &middot; Industry Panels</div></div>
+          <div class="info-row"><div class="info-key">Audience</div><div class="info-val">Artists, Fans, Industry Professionals &amp; Community</div></div>
+          <div class="info-row"><div class="info-key">Focus</div><div class="info-val">Latin Music &middot; Cultural Celebration &middot; Community Building</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 5 — FESTIVAL PHOTOS ══ -->
+  <div class="slide s-photo" data-slide="4">
+    <div class="photo-inner">
+      <div class="photo-header">
+        <div class="photo-prog-name">UNSIN <em>Festival</em></div>
+        <div class="photo-hint">Replace with event photos</div>
+      </div>
+      <div class="photo-grid-festival">
+        <div class="photo-box span-row-2">
+          <div class="photo-box-inner">
+            <div class="photo-icon">🎪</div>
+            <div class="photo-box-label">Main Stage</div>
+            <div class="photo-box-sub">Festival main performance</div>
+          </div>
+        </div>
+        <div class="photo-box">
+          <div class="photo-box-inner">
+            <div class="photo-icon">🎶</div>
+            <div class="photo-box-label">Community</div>
+            <div class="photo-box-sub">Cultural activations</div>
+          </div>
+        </div>
+        <div class="photo-box">
+          <div class="photo-box-inner">
+            <div class="photo-icon">🎤</div>
+            <div class="photo-box-label">Artists</div>
+            <div class="photo-box-sub">Performer moments</div>
+          </div>
+        </div>
+        <div class="photo-box">
+          <div class="photo-box-inner">
+            <div class="photo-icon">🌟</div>
+            <div class="photo-box-label">Crowd</div>
+            <div class="photo-box-sub">Audience &amp; energy</div>
+          </div>
+        </div>
+        <div class="photo-box">
+          <div class="photo-box-inner">
+            <div class="photo-icon">🏟️</div>
+            <div class="photo-box-label">Venue</div>
+            <div class="photo-box-sub">Event space</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 6 — TALKS DETAIL ══ -->
+  <div class="slide" data-slide="5">
+    <div class="slide-inner">
+      <div class="mono-label">Program 02 &mdash; In-Person Series</div>
+      <div class="two-col">
+        <div>
+          <div class="big-hl" style="font-size:clamp(38px,4.5vw,64px);">UNSIN<br><em>Talks</em></div>
+          <div class="talks-body">
+            Four intimate in-person gatherings held throughout the year, each anchored to a distinct cultural moment. UNSIN Talks builds an ongoing, evolving conversation about Latin music, creative identity, and the industry.
+          </div>
+        </div>
+        <div>
+          <div class="event-list">
+            <div class="event-row">
+              <div class="ev-month">Feb</div>
+              <div>
+                <div class="ev-name">New Year Series</div>
+                <div class="ev-sub">Opening the year &mdash; setting the tone for what&rsquo;s ahead</div>
+              </div>
+              <div class="ev-tag ev-tag-pink">In-Person</div>
+            </div>
+            <div class="event-row">
+              <div class="ev-month">Jul</div>
+              <div>
+                <div class="ev-name">Summer Series</div>
+                <div class="ev-sub">Mid-year energy &mdash; celebrating the season</div>
+              </div>
+              <div class="ev-tag ev-tag-pink">In-Person</div>
+            </div>
+            <div class="event-row">
+              <div class="ev-month">Oct</div>
+              <div>
+                <div class="ev-name">Latin Billboard Week</div>
+                <div class="ev-sub">Industry conversations during Latin music&rsquo;s biggest week</div>
+              </div>
+              <div class="ev-tag ev-tag-pink">In-Person</div>
+            </div>
+            <div class="event-row">
+              <div class="ev-month">Dec</div>
+              <div>
+                <div class="ev-name">Art Basel Edition</div>
+                <div class="ev-sub">Music meets art &mdash; cultural convergence at year&rsquo;s close</div>
+              </div>
+              <div class="ev-tag ev-tag-pink">In-Person</div>
+            </div>
+            <div class="event-sum">
+              <div class="event-sum-lbl">Total 2026</div>
+              <div class="event-sum-num">4 Talks</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 7 — TALKS PHOTOS ══ -->
+  <div class="slide s-photo" data-slide="6">
+    <div class="photo-inner">
+      <div class="photo-header">
+        <div class="photo-prog-name">UNSIN <em>Talks</em></div>
+        <div class="photo-hint">Replace with event photos</div>
+      </div>
+      <div class="photo-grid-talks">
+        <div class="photo-box">
+          <div class="photo-box-inner">
+            <div class="photo-icon">🗓️</div>
+            <div class="photo-box-label">New Year Series</div>
+            <div class="photo-box-sub">February</div>
+          </div>
+        </div>
+        <div class="photo-box">
+          <div class="photo-box-inner">
+            <div class="photo-icon">☀️</div>
+            <div class="photo-box-label">Summer Series</div>
+            <div class="photo-box-sub">July</div>
+          </div>
+        </div>
+        <div class="photo-box">
+          <div class="photo-box-inner">
+            <div class="photo-icon">🎵</div>
+            <div class="photo-box-label">Latin Billboard Week</div>
+            <div class="photo-box-sub">October</div>
+          </div>
+        </div>
+        <div class="photo-box">
+          <div class="photo-box-inner">
+            <div class="photo-icon">🎨</div>
+            <div class="photo-box-label">Art Basel Edition</div>
+            <div class="photo-box-sub">December</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 8 — LABS DETAIL ══ -->
+  <div class="slide" data-slide="7">
+    <div class="slide-inner">
+      <div class="mono-label">Program 03 &mdash; Education &amp; Innovation</div>
+      <div class="two-col-eq">
+        <div>
+          <div class="big-hl" style="font-size:clamp(38px,4.5vw,64px);">UNSIN<br><em>Labs</em></div>
+          <div class="talks-body">
+            An ecosystem-building program combining online webinars with an in-person intensive. Labs focuses on the intersection of AI, technology, and the creative industries &mdash; equipping Latin music creators with the knowledge and tools to lead, not just adapt.
+          </div>
+          <div class="labs-formats">
+            <div class="fmt-box">
+              <div class="fmt-key">Webinars</div>
+              <div class="fmt-num">3</div>
+              <div class="fmt-desc">Online: Jun &rsquo;26, Aug &rsquo;26, Feb &rsquo;27</div>
+            </div>
+            <div class="fmt-box">
+              <div class="fmt-key">In-Person</div>
+              <div class="fmt-num">1</div>
+              <div class="fmt-desc">Intensive: March &rsquo;27</div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="event-list">
+            <div class="event-row">
+              <div class="ev-month">Jun &rsquo;26</div>
+              <div>
+                <div class="ev-name">Claude AI for Creative Industries</div>
+                <div class="ev-sub">How AI tools are reshaping the creative economy</div>
+              </div>
+              <div class="ev-tag ev-tag-teal">Webinar</div>
+            </div>
+            <div class="event-row">
+              <div class="ev-month">Aug &rsquo;26</div>
+              <div>
+                <div class="ev-name">Notion for Creative Projects</div>
+                <div class="ev-sub">Building workflows and systems for creative professionals</div>
+              </div>
+              <div class="ev-tag ev-tag-teal">Webinar</div>
+            </div>
+            <div class="event-row">
+              <div class="ev-month">Feb &rsquo;27</div>
+              <div>
+                <div class="ev-name">AI and Copyright</div>
+                <div class="ev-sub">Navigating intellectual property in the AI era</div>
+              </div>
+              <div class="ev-tag ev-tag-teal">Webinar</div>
+            </div>
+            <div class="event-row">
+              <div class="ev-month">Mar &rsquo;27</div>
+              <div>
+                <div class="ev-name">Cursor AI for Creatives</div>
+                <div class="ev-sub">In-person intensive &mdash; AI-powered creative tools workshop</div>
+              </div>
+              <div class="double-tag">
+                <div class="ev-tag ev-tag-amber">In-Person</div>
+              </div>
+            </div>
+            <div class="event-sum">
+              <div class="event-sum-lbl">Total Season</div>
+              <div class="event-sum-num">4 Labs Events</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 9 — LABS PHOTOS ══ -->
+  <div class="slide s-photo" data-slide="8">
+    <div class="photo-inner">
+      <div class="photo-header">
+        <div class="photo-prog-name">UNSIN <em>Labs</em></div>
+        <div class="photo-hint">Replace with event photos</div>
+      </div>
+      <div class="photo-grid-labs">
+        <div class="photo-box span-row-2">
+          <div class="photo-box-inner">
+            <div class="photo-icon">💻</div>
+            <div class="photo-box-label">In-Person Intensive</div>
+            <div class="photo-box-sub">Cursor AI for Creatives · March 2027</div>
+          </div>
+        </div>
+        <div class="photo-box">
+          <div class="photo-box-inner">
+            <div class="photo-icon">🤖</div>
+            <div class="photo-box-label">Webinar Series</div>
+            <div class="photo-box-sub">Claude AI &amp; Notion sessions</div>
+          </div>
+        </div>
+        <div class="photo-box">
+          <div class="photo-box-inner">
+            <div class="photo-icon">⚖️</div>
+            <div class="photo-box-label">AI &amp; Copyright</div>
+            <div class="photo-box-sub">Feb 2027 session</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 10 — CALENDAR ══ -->
+  <div class="slide" data-slide="9">
+    <div class="slide-inner">
+      <div class="mono-label">Annual Calendar</div>
+      <div class="cal-hl">2026 at a <em>glance.</em></div>
+      <div class="cal-grid">
+        <div class="month-col"><div class="m-label">Jan</div></div>
+        <div class="month-col">
+          <div class="m-label">Feb</div>
+          <div class="cal-chip chip-talks">Talks<br>New Year</div>
+        </div>
+        <div class="month-col"><div class="m-label">Mar</div></div>
+        <div class="month-col">
+          <div class="m-label">Apr</div>
+          <div class="cal-chip chip-festival">UNSIN<br>Festival</div>
+        </div>
+        <div class="month-col"><div class="m-label">May</div></div>
+        <div class="month-col">
+          <div class="m-label">Jun</div>
+          <div class="cal-chip chip-webinar">Labs<br>Claude AI</div>
+        </div>
+        <div class="month-col">
+          <div class="m-label">Jul</div>
+          <div class="cal-chip chip-talks">Talks<br>Summer</div>
+        </div>
+        <div class="month-col">
+          <div class="m-label">Aug</div>
+          <div class="cal-chip chip-webinar">Labs<br>Notion</div>
+        </div>
+        <div class="month-col"><div class="m-label">Sep</div></div>
+        <div class="month-col">
+          <div class="m-label">Oct</div>
+          <div class="cal-chip chip-talks">Talks<br>Billboard</div>
+        </div>
+        <div class="month-col"><div class="m-label">Nov</div></div>
+        <div class="month-col">
+          <div class="m-label">Dec</div>
+          <div class="cal-chip chip-talks">Talks<br>Art Basel</div>
+        </div>
+      </div>
+      <div class="cal-2027-strip">
+        <div class="cal-2027-label">Continuing into 2027</div>
+        <div class="cal-2027-events">
+          <div class="cal-2027-item">
+            <span class="cal-2027-month">Feb &rsquo;27</span>
+            <span>Labs Webinar &mdash; AI and Copyright</span>
+          </div>
+          <div style="width:1px;background:var(--border);flex-shrink:0;"></div>
+          <div class="cal-2027-item">
+            <span class="cal-2027-month">Mar &rsquo;27</span>
+            <span>Labs In-Person &mdash; Cursor AI for Creatives</span>
+          </div>
+        </div>
+      </div>
+      <div class="cal-legend">
+        <div class="leg"><div class="leg-sq" style="background:rgba(233,113,155,0.5);"></div>UNSIN Festival</div>
+        <div class="leg"><div class="leg-sq" style="background:rgba(240,237,230,0.28);"></div>UNSIN Talks</div>
+        <div class="leg"><div class="leg-sq" style="background:rgba(110,207,190,0.5);"></div>Labs Webinar</div>
+        <div class="leg"><div class="leg-sq" style="background:rgba(240,169,107,0.5);"></div>Labs In-Person</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 11 — IMPACT ══ -->
+  <div class="slide" data-slide="10">
+    <div class="slide-inner">
+      <div class="mono-label">Community Impact</div>
+      <div class="impact-hl">Building lasting <em>cultural impact</em><br>year-round.</div>
+      <div class="stats-strip">
+        <div class="stat-cell">
+          <div class="stat-n">9<sup>+</sup></div>
+          <div class="stat-l">Events per season</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-n">3</div>
+          <div class="stat-l">Active programs</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-n">12</div>
+          <div class="stat-l">Months of programming</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-n">100<sup>%</sup></div>
+          <div class="stat-l">Latin music focused</div>
+        </div>
+      </div>
+      <div class="impact-quotes">
+        <div class="i-quote">
+          "UNSIN creates the spaces Latin creators need &mdash; not just to be entertained, but to be seen, supported, and equipped to lead the next generation of the creative economy."
+          <cite>— Community &amp; Artist Development</cite>
+        </div>
+        <div class="i-quote">
+          "Through celebration, conversation, and education at the frontier of AI and tech, UNSIN builds the infrastructure Latin music has always deserved."
+          <cite>— Program Philosophy</cite>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 12 — COLLABORATION ══ -->
+  <div class="slide" data-slide="11">
+    <div class="slide-inner">
+      <div class="mono-label">Collaboration</div>
+      <div class="collab-grid">
+        <div>
+          <div class="collab-hl">Let&rsquo;s build this <em>together.</em></div>
+          <div class="collab-body">UNSIN welcomes organizations that share our commitment to Latin music, cultural equity, and community development. We design meaningful, values-aligned collaborations built around three core ideas.</div>
+          <div class="collab-pillars">
+            <div class="collab-pillar">
+              <div class="collab-pillar-num">Idea 01</div>
+              <div class="collab-pillar-title">Year-Round Programming</div>
+              <div class="collab-pillar-body">Present your organization across our full annual calendar &mdash; from UNSIN Festival in April through Talks and Labs. Consistent, meaningful visibility with Latin music audiences from February through December and beyond.</div>
+            </div>
+            <div class="collab-pillar">
+              <div class="collab-pillar-num">Idea 02</div>
+              <div class="collab-pillar-title">Community Building</div>
+              <div class="collab-pillar-body">Deepen your connection to Latin creative communities through authentic, co-created experiences at UNSIN Talks &mdash; from the New Year Series through Art Basel Edition. Four moments, one sustained relationship.</div>
+            </div>
+            <div class="collab-pillar">
+              <div class="collab-pillar-num">Idea 03</div>
+              <div class="collab-pillar-title">Education &amp; Innovation</div>
+              <div class="collab-pillar-body">Align with UNSIN Labs at the forefront of AI and technology in the creative industries. Support the next generation of Latin creators navigating &mdash; and leading &mdash; the intersection of tech and culture.</div>
+            </div>
+          </div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">What collaboration with UNSIN looks like</div>
+          <div class="benefit-items">
+            <div class="benefit-item">
+              <span class="benefit-arrow">&#8594;</span>
+              Access to Latin music audiences across multiple touchpoints throughout the year
+            </div>
+            <div class="benefit-item">
+              <span class="benefit-arrow">&#8594;</span>
+              Co-presented programming across Festival, Talks, and Labs
+            </div>
+            <div class="benefit-item">
+              <span class="benefit-arrow">&#8594;</span>
+              Visibility at in-person events reaching artists, fans, and industry professionals
+            </div>
+            <div class="benefit-item">
+              <span class="benefit-arrow">&#8594;</span>
+              Authentic connection with Latin artists, innovators, and community members
+            </div>
+            <div class="benefit-item">
+              <span class="benefit-arrow">&#8594;</span>
+              Custom collaboration models designed around your goals and our programs
+            </div>
+            <div class="benefit-item">
+              <span class="benefit-arrow">&#8594;</span>
+              Year-round presence across digital and in-person formats
+            </div>
+            <div class="benefit-item">
+              <span class="benefit-arrow">&#8594;</span>
+              Impact reporting and community outcomes documentation
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 13 — CLOSE ══ -->
+  <div class="slide s-close" data-slide="12">
+    <div class="close-glow"></div>
+    <div class="close-content">
+      <div class="cover-kicker">
+        <span class="cover-kicker-line"></span>
+        Ready to Connect
+        <span class="cover-kicker-line"></span>
+      </div>
+      <div class="close-hl">Let&rsquo;s shape the future of <em>Latin music</em> together.</div>
+      <div class="close-body">We&rsquo;d love to explore how your organization can join UNSIN&rsquo;s programming. Let&rsquo;s start a conversation.</div>
+      <a href="https://unsin.live" target="_blank" class="close-cta-btn">
+        Visit unsin.live
+        <svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2 7h10M7 2l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+      <div class="close-email">julian@immrecords.com</div>
+      <div class="close-wordmark">UNS<span>IN</span></div>
+      <div class="close-tag">A 501(c)(3) Non-Profit Organization</div>
+    </div>
+  </div>
+
+</div><!-- /deck -->
+
+<script>
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const total  = slides.length;
+  let cur = 0;
+
+  const bar     = document.getElementById('progressBar');
+  const counter = document.getElementById('slideCounter');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const dotsEl  = document.getElementById('slideDots');
+
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    d.addEventListener('click', () => goTo(i));
+    dotsEl.appendChild(d);
+  });
+
+  function render() {
+    bar.style.width = ((cur + 1) / total * 100) + '%';
+    counter.textContent = (cur + 1) + ' / ' + total;
+    prevBtn.disabled = cur === 0;
+    nextBtn.disabled = cur === total - 1;
+    dotsEl.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === cur));
+  }
+
+  function goTo(idx) {
+    if (idx < 0 || idx >= total || idx === cur) return;
+    const out = slides[cur];
+    const inn = slides[idx];
+    out.classList.add('exit');
+    out.classList.remove('active');
+    out.addEventListener('animationend', () => out.classList.remove('exit'), { once: true });
+    inn.classList.add('active');
+    cur = idx;
+    render();
+  }
+
+  prevBtn.addEventListener('click', () => goTo(cur - 1));
+  nextBtn.addEventListener('click', () => goTo(cur + 1));
+
+  document.addEventListener('keydown', e => {
+    if (['ArrowRight','ArrowDown','PageDown',' '].includes(e.key)) { e.preventDefault(); goTo(cur + 1); }
+    if (['ArrowLeft','ArrowUp','PageUp'].includes(e.key))          { e.preventDefault(); goTo(cur - 1); }
+    if (e.key === 'Home') { e.preventDefault(); goTo(0); }
+    if (e.key === 'End')  { e.preventDefault(); goTo(total - 1); }
+  });
+
+  let tx = 0;
+  document.addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, { passive: true });
+  document.addEventListener('touchend',   e => {
+    const dx = tx - e.changedTouches[0].clientX;
+    if (Math.abs(dx) > 50) dx > 0 ? goTo(cur + 1) : goTo(cur - 1);
+  }, { passive: true });
+
+  render();
+</script>
+</body>
+</html>
